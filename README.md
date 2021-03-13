@@ -1,4 +1,4 @@
-# RCL CertBot
+# RCL CertificateBot
 
 A Windows Service and Linux Daemon to automate the renewal of SSL/TLS certificates created in the RCL Portal. Certificates are automatically saved to the Windows or Linux server hosting the serivce or daemon. 
 
@@ -12,7 +12,7 @@ A Windows Service and Linux Daemon to automate the renewal of SSL/TLS certificat
 
 You can read the detailed documentation to configure, install and test the service : 
 
-[RCL CertBot](https://rcl-letsencrypt-auto-ssl.github.io/docs/certbot/certbot.html)
+[RCL CertificateBot](https://docs.rclapp.com/certbot/certbot.html)
 
 ## Contribute to this project
 
@@ -22,7 +22,7 @@ This is how you can contribute :
 
 - You need a basic understanding of Git and GitHub.com
 
-- Open an [issue](https://github.com/rcl-letsencrypt-auto-ssl/RCL.LetsEncrypt.CertBot/issues) describing what you want to do, such as fixing a bug or adding a new feature. Wait for approval before you invest much time
+- Open an [issue](https://github.com/rcl-ssl/RCL.CertificateBot/issues) describing what you want to do, such as fixing a bug or adding a new feature. Wait for approval before you invest much time
 
 - Fork the repo of the **master** branch and create a new branch for your changes
 
@@ -32,4 +32,4 @@ This is how you can contribute :
 
 ## RCL SDK
 
-This application was built with the [RCL SDK](https://rcl-letsencrypt-auto-ssl.github.io/docs/sdk/sdk.html)
+This application was built with the [RCL SDK](https://docs.rclapp.com/sdk/sdk.html)
