@@ -20,7 +20,7 @@ namespace RCL.CertificateBot.WindowsService
                     IConfiguration Configuration = hostContext.Configuration;
 
                     services.AddAuthTokenService(options => Configuration.Bind("Auth", options));
-                    services.AddLetsEncryptSDK(options => Configuration.Bind("LetsEncryptSDK", options));
+                    services.AddRCLSDK(options => Configuration.Bind("RCLSDK", options));
                     services.AddCertificateBot(options => Configuration.Bind("CertificateBot", options));
 
                     services.AddHostedService<Worker>();
