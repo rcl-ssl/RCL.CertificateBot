@@ -5,7 +5,8 @@ IHost host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((hostContext, services) =>
     {
         IConfiguration Configuration = hostContext.Configuration;
-       
+
+        services.AddRCLSDKService(options => Configuration.Bind("RCLSDK", options));
         services.AddCertificateBotService(options => Configuration.Bind("CertificateBot", options));
         services.AddHostedService<Worker>();
     })
