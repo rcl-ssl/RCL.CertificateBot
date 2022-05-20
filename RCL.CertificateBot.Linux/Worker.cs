@@ -26,7 +26,7 @@ namespace RCL.CertificateBot.Linux
 
                     _logger.LogInformation(message);
                 }
-                catch(Exception ex)
+                catch (Exception ex)
                 {
                     _logger.LogError($"{DateTime.Now} {ex.Message}");
                 }

@@ -5,10 +5,14 @@ IHost host = Host.CreateDefaultBuilder(args)
     {
         options.ServiceName = "CertificateBot";
     })
-    .ConfigureServices(services =>
-    {
-        services.AddHostedService<Worker>();
-    })
+    .ConfigureServices((hostContext, services) =>
+     {
+         IConfiguration Configuration = hostContext.Configuration;
+
+         services.AddRCLSDKService(options => Configuration.Bind("RCLSDK", options));
+         services.AddCertificateBotService(options => Configuration.Bind("CertificateBot", options));
+         services.AddHostedService<Worker>();
+     })
     .Build();
 
 await host.RunAsync();
