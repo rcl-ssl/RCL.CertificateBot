@@ -8,6 +8,7 @@ IHost host = Host.CreateDefaultBuilder(args)
 
         services.AddRCLSDKService(options => Configuration.Bind("RCLSDK", options));
         services.AddCertificateBotService(options => Configuration.Bind("CertificateBot", options));
+
         services.AddHostedService<Worker>();
     })
     .Build();
