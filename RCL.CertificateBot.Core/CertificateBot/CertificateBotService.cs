@@ -125,11 +125,17 @@ namespace RCL.CertificateBot.Core
             {
                 string folderPath = FolderNameHelper.GetFolderPath(certificate.certificateName, _options.Value.SaveCertificatePath);
 
-                await SaveFileAsync(_pfxCertificateFileName, folderPath, certificate.certificateDownloadUrl.pfxUrl);
-                await SaveFileAsync(_privateKeyFileName, folderPath, certificate.certificateDownloadUrl.keyUrl);
-                await SaveFileAsync(_primaryCertificateFileName, folderPath, certificate.certificateDownloadUrl.certCrtUrl);
-                await SaveFileAsync(_caBundleFileName, folderPath, certificate.certificateDownloadUrl.cabundleCrtUrl);
-                await SaveFileAsync(_fullChainCertificateFileName, folderPath, certificate.certificateDownloadUrl.fullchainCrtUrl);
+                int files = _fileService.GetNumberFilesInDirectory(folderPath);
+                int age = (DateTime.Now.Date - certificate.issueDate.Date).Days;
+
+                if (files < 1 || age < 9)
+                {
+                    await SaveFileAsync(_pfxCertificateFileName, folderPath, certificate.certificateDownloadUrl.pfxUrl);
+                    await SaveFileAsync(_privateKeyFileName, folderPath, certificate.certificateDownloadUrl.keyUrl);
+                    await SaveFileAsync(_primaryCertificateFileName, folderPath, certificate.certificateDownloadUrl.certCrtUrl);
+                    await SaveFileAsync(_caBundleFileName, folderPath, certificate.certificateDownloadUrl.cabundleCrtUrl);
+                    await SaveFileAsync(_fullChainCertificateFileName, folderPath, certificate.certificateDownloadUrl.fullchainCrtUrl);
+                }
             }
             catch (Exception ex)
             {

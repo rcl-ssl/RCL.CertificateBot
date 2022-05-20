@@ -2,6 +2,7 @@ using RCL.CertificateBot.Windows;
 
 IHost host = Host.CreateDefaultBuilder(args)
     .UseWindowsService()
+    .ConfigureLogging((_, logging) => logging.AddEventLog())
     .ConfigureServices((hostContext, services) =>
      {
          IConfiguration Configuration = hostContext.Configuration;

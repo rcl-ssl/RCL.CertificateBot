@@ -17,6 +17,18 @@
             }
         }
 
+        public int GetNumberFilesInDirectory(string path)
+        {
+            if(!Directory.Exists(path))
+            {
+                return 0;
+            }
+            else
+            {
+                return Directory.GetFiles(path).Length;
+            }
+        }
+
         public void SaveFile(string fileName, string path, Stream contentStream)
         {
             try

@@ -69,5 +69,15 @@
 
             Assert.AreEqual(1, 1);
         }
+
+        [TestMethod]
+        public void GetNumberOfFilesInFolder()
+        {
+            string directoryPath = "C:/test/testFolder";
+
+            int r = _fileService.GetNumberFilesInDirectory(directoryPath);
+
+            Assert.AreNotEqual(0, r);
+        }
     }
 }
