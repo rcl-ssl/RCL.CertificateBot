@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RCL.CertificateBot.Core.Tes
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RCL.CertificateBot.Linux", "RCL.CertificateBot.Linux\RCL.CertificateBot.Linux.csproj", "{C941C64A-8741-4EBD-9465-E8CCCBF369FF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RCL.CertificateBot.Windows", "RCL.CertificateBot.Windows\RCL.CertificateBot.Windows.csproj", "{EE342250-FFFC-4779-9D22-A4D4CDEB78E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RCL.CertificateBot.Windows", "RCL.CertificateBot.Windows\RCL.CertificateBot.Windows.csproj", "{EE342250-FFFC-4779-9D22-A4D4CDEB78E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RCL.CertificateBot.IIS", "RCL.CertificateBot.IIS\RCL.CertificateBot.IIS.csproj", "{6EF08F12-4574-40B6-BE05-BCD5224C33ED}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{EE342250-FFFC-4779-9D22-A4D4CDEB78E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EE342250-FFFC-4779-9D22-A4D4CDEB78E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EE342250-FFFC-4779-9D22-A4D4CDEB78E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6EF08F12-4574-40B6-BE05-BCD5224C33ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6EF08F12-4574-40B6-BE05-BCD5224C33ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6EF08F12-4574-40B6-BE05-BCD5224C33ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6EF08F12-4574-40B6-BE05-BCD5224C33ED}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
