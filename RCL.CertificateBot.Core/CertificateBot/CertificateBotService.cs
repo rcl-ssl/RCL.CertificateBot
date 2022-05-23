@@ -2,6 +2,7 @@
 
 using Microsoft.Extensions.Options;
 using RCL.SDK;
+using System.Security.Cryptography.X509Certificates;
 
 namespace RCL.CertificateBot.Core
 {
@@ -10,6 +11,8 @@ namespace RCL.CertificateBot.Core
         private readonly IOptions<CertificateBotOptions> _options;
         private readonly ICertificateService _certificateService;
         private readonly IFileService _fileService;
+        private readonly IIISService _iIISService;
+
         private static readonly HttpClient _httpClient;
 
         private const string _pfxCertificateFileName = "certificate.pfx";
@@ -25,11 +28,13 @@ namespace RCL.CertificateBot.Core
 
         public CertificateBotService(IOptions<CertificateBotOptions> options,
             ICertificateService certificateService,
-            IFileService fileService)
+            IFileService fileService,
+            IIISService iIISService)
         {
             _options = options;
             _certificateService = certificateService;
             _fileService = fileService;
+            _iIISService = iIISService;
         }
 
         public async Task<string> InstallAndRenewCertificateAsync()
@@ -38,22 +43,130 @@ namespace RCL.CertificateBot.Core
 
             try
             {
-                List<Certificate> certificates = await GetIncludedCertificatesAsync();
+                List<string> certificateNames = _options.Value.IncludeCertificates;
 
-                if (certificates?.Count > 0)
+                if (certificateNames?.Count > 0)
                 {
-                    message = $"Found {certificates.Count} certificate(s) to save locally. ";
 
-                    foreach (Certificate cert in certificates)
+                    List<Certificate> certificates = await GetIncludedCertificatesAsync(certificateNames);
+
+                    if (certificates?.Count > 0)
                     {
-                        await SaveCertificateToFileAsync(cert);
+                        message = $"Found {certificates.Count} certificate(s) to process locally. ";
 
-                        message = $"{message} Successfully saved : {cert.certificateName}. ";
+                        foreach (Certificate cert in certificates)
+                        {
+                            bool b = await SaveCertificateAsync(cert);
+
+                            if (b == true)
+                            {
+                                message = $"{message} Successfully saved : {cert.certificateName} in local machine. ";
+                            }
+                            else
+                            {
+                                message = $"{message} {cert.certificateName} is up-to-date on local machine. ";
+                            }
+                        }
+                    }
+                    else
+                    {
+                        message = $"{message} Did not find any certificates to process locally. ";
+                    }
+
+                    List<Certificate> certificatesToRenew = await GetCertificatesToRenewAsync();
+
+                    if (certificatesToRenew?.Count > 0)
+                    {
+                        message = $"{message} Found {certificatesToRenew?.Count} certificate(s) to renew. ";
+
+                        foreach (Certificate cert in certificatesToRenew)
+                        {
+                            await _certificateService.RenewCertificateAsync(cert);
+
+                            message = $"{message} Scheduled {cert.certificateName} for renewal. ";
+                        }
+                    }
+                    else
+                    {
+                        message = $"{message} Did not find any certificates to renew. ";
                     }
                 }
                 else
                 {
-                    message = "Did not find any certificates to save locally. ";
+                    message = $"{message} Did not find any certificates to include in local machine. ";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"{message} {ex.Message}");
+            }
+
+            return message;
+        }
+
+        public async Task<string> InstallAndRenewCertificateInIISAsync()
+        {
+            string message = $"Message received at : {DateTime.Now}. ";
+
+            try
+            {
+                List<IISBindingInformation> bindings = _options.Value.IISBindings;
+                List<string> certificateNamesSaved = new List<string>();
+                List<Certificate> certificatesSaved = new List<Certificate>();
+                List<string> certificateProcessed = new List<string>();
+
+                if (bindings?.Count > 0)
+                {
+                    foreach (var binding in bindings)
+                    {
+                        Certificate certificate = new Certificate
+                        {
+                            certificateName = binding.certificateName
+                        };
+
+                        if (!certificateProcessed.Contains(certificate.certificateName))
+                        {
+                            Certificate certRetrieved = await _certificateService.GetCertificateAsync(certificate);
+
+                            if (!string.IsNullOrEmpty(certRetrieved?.certificateName))
+                            {
+                                bool b = await SaveCertificateAsync(certRetrieved);
+
+                                if (b == true)
+                                {
+                                    message = $"{message} Successfully saved : {certRetrieved.certificateName} in local machine. ";
+                                    certificateNamesSaved.Add(certRetrieved.certificateName);
+                                    certificatesSaved.Add(certRetrieved);
+                                }
+                                else
+                                {
+                                    message = $"{message} {certRetrieved.certificateName} is up-to-date on local machine. ";
+                                }
+                            }
+
+                            certificateProcessed.Add(certificate.certificateName);
+                        }
+                    }
+
+                    foreach(var binding in bindings)
+                    {
+                        if(certificateNamesSaved.Contains(binding.certificateName))
+                        {
+                           RemoveIISBinding(binding);
+
+                            Certificate certificate = certificatesSaved.Where(w => w.certificateName == binding.certificateName).FirstOrDefault();
+
+                            string folderPath = FolderNameHelper.GetFolderPath(certificate.certificateName, _options.Value.SaveCertificatePath);
+
+                            _iIISService.AddIISSiteBinding(binding.siteName, binding.GetBindingInformation(), $"{folderPath}/{_pfxCertificateFileName}", certificate.password, StoreLocation.LocalMachine);
+
+                            message = $"{message} Successfully bound certificate : {certificate.certificateName} to IIS site: {binding.siteName}. ";
+                        }
+                    }
+                }
+                else
+                {
+                    message = $"{message} Did not find any bindngs for IIS. ";
                 }
 
                 List<Certificate> certificatesToRenew = await GetCertificatesToRenewAsync();
@@ -62,7 +175,7 @@ namespace RCL.CertificateBot.Core
                 {
                     message = $"{message} Found {certificatesToRenew?.Count} certificate(s) to renew. ";
 
-                    foreach(Certificate cert in certificatesToRenew)
+                    foreach (Certificate cert in certificatesToRenew)
                     {
                         await _certificateService.RenewCertificateAsync(cert);
 
@@ -76,20 +189,18 @@ namespace RCL.CertificateBot.Core
             }
             catch (Exception ex)
             {
-                throw new Exception(ex.Message);
+                throw new Exception($"{message} {ex.Message}");
             }
 
             return message;
         }
 
-        private async Task<List<Certificate>> GetIncludedCertificatesAsync()
+        private async Task<List<Certificate>> GetIncludedCertificatesAsync(List<string> certificateNames)
         {
             List<Certificate> certificates = new List<Certificate>();
 
             try
             {
-                List<string> certificateNames = _options.Value.IncludeCertificates;
-
                 if (certificateNames?.Count > 0)
                 {
                     foreach (string certificateName in certificateNames)
@@ -119,8 +230,10 @@ namespace RCL.CertificateBot.Core
             return certificates;
         }
 
-        private async Task SaveCertificateToFileAsync(Certificate certificate)
+        private async Task<bool> SaveCertificateAsync(Certificate certificate)
         {
+            bool b = false;
+
             try
             {
                 string folderPath = FolderNameHelper.GetFolderPath(certificate.certificateName, _options.Value.SaveCertificatePath);
@@ -135,12 +248,16 @@ namespace RCL.CertificateBot.Core
                     await SaveFileAsync(_primaryCertificateFileName, folderPath, certificate.certificateDownloadUrl.certCrtUrl);
                     await SaveFileAsync(_caBundleFileName, folderPath, certificate.certificateDownloadUrl.cabundleCrtUrl);
                     await SaveFileAsync(_fullChainCertificateFileName, folderPath, certificate.certificateDownloadUrl.fullchainCrtUrl);
+
+                    b = true;
                 }
             }
             catch (Exception ex)
             {
                 throw new Exception(ex.Message);
             }
+
+            return b;
         }
 
         private async Task SaveFileAsync(string fileName, string folderPath, string fileUri)
@@ -177,7 +294,7 @@ namespace RCL.CertificateBot.Core
                     {
                         foreach (Certificate cert in certsToRenew)
                         {
-                            if(certNames.Contains(cert.certificateName))
+                            if (certNames.Contains(cert.certificateName))
                             {
                                 certificates.Add(cert);
                             }
@@ -191,6 +308,15 @@ namespace RCL.CertificateBot.Core
             }
 
             return certificates;
+        }
+
+        private void RemoveIISBinding(IISBindingInformation binding)
+        {
+            try
+            {
+                _iIISService.RemoveIISSiteBinding(binding.siteName, binding.GetBindingInformation());
+            }
+            catch (Exception) { }
         }
     }
 }

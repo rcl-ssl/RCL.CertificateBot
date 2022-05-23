@@ -25,5 +25,20 @@
                 Assert.Fail();
             }
         }
+
+        [TestMethod]
+        public async Task InstallAndRenewCertificateInIISTest()
+        {
+            try
+            {
+                await _certificateBotService.InstallAndRenewCertificateInIISAsync();
+                Assert.AreEqual(1, 1);
+            }
+            catch (Exception ex)
+            {
+                string err = ex.Message;
+                Assert.Fail();
+            }
+        }
     }
 }
