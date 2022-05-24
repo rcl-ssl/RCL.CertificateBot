@@ -160,7 +160,7 @@ namespace RCL.CertificateBot.Core
 
                             _iIISService.AddIISSiteBinding(binding.siteName, binding.GetBindingInformation(), $"{folderPath}/{_pfxCertificateFileName}", certificate.password, StoreLocation.LocalMachine);
 
-                            message = $"{message} Successfully bound certificate : {certificate.certificateName} to IIS site: {binding.siteName}. ";
+                            message = $"{message} Successfully bound certificate : {certificate.certificateName} to IIS site: {binding.siteName} for hostname: {binding.host}. ";
                         }
                     }
                 }
