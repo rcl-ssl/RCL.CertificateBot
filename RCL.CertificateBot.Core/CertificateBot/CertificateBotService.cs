@@ -73,7 +73,7 @@ namespace RCL.CertificateBot.Core
                         message = $"{message} Did not find any certificates to process locally. ";
                     }
 
-                    List<Certificate> certificatesToRenew = await GetCertificatesToRenewAsync();
+                    List<Certificate> certificatesToRenew = await GetCertificatesToRenewAsync(_options.Value.IncludeCertificates);
 
                     if (certificatesToRenew?.Count > 0)
                     {
@@ -113,7 +113,7 @@ namespace RCL.CertificateBot.Core
                 List<IISBindingInformation> bindings = _options.Value.IISBindings;
                 List<string> certificateNamesSaved = new List<string>();
                 List<Certificate> certificatesSaved = new List<Certificate>();
-                List<string> certificateProcessed = new List<string>();
+                List<string> certificatesProcessed = new List<string>();
 
                 if (bindings?.Count > 0)
                 {
@@ -124,7 +124,7 @@ namespace RCL.CertificateBot.Core
                             certificateName = binding.certificateName
                         };
 
-                        if (!certificateProcessed.Contains(certificate.certificateName))
+                        if (!certificatesProcessed.Contains(certificate.certificateName))
                         {
                             Certificate certRetrieved = await _certificateService.GetCertificateAsync(certificate);
 
@@ -144,7 +144,7 @@ namespace RCL.CertificateBot.Core
                                 }
                             }
 
-                            certificateProcessed.Add(certificate.certificateName);
+                            certificatesProcessed.Add(certificate.certificateName);
                         }
                     }
 
@@ -169,7 +169,7 @@ namespace RCL.CertificateBot.Core
                     message = $"{message} Did not find any bindngs for IIS. ";
                 }
 
-                List<Certificate> certificatesToRenew = await GetCertificatesToRenewAsync();
+                List<Certificate> certificatesToRenew = await GetCertificatesToRenewAsync(certificatesProcessed);
 
                 if (certificatesToRenew?.Count > 0)
                 {
@@ -278,7 +278,7 @@ namespace RCL.CertificateBot.Core
             }
         }
 
-        private async Task<List<Certificate>> GetCertificatesToRenewAsync()
+        private async Task<List<Certificate>> GetCertificatesToRenewAsync(List<string> certNames)
         {
             List<Certificate> certificates = new List<Certificate>();
 
@@ -288,7 +288,7 @@ namespace RCL.CertificateBot.Core
 
                 if (certsToRenew?.Count > 0)
                 {
-                    List<string> certNames = _options.Value.IncludeCertificates;
+                    
 
                     if (certNames?.Count > 0)
                     {
